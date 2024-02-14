@@ -94,7 +94,7 @@ if page == "Chat":
             except Exception as e:
                 st.error(f"Ein Problem ist aufgetreten")
                 st.error("Hoppla, die GPT-Antwort führte zu einem Fehler : Bitte versuchen Sie es mit einer anderen Frage noch einmal.")
-                
+
 
 
 
