@@ -7,6 +7,18 @@ from langchain import OpenAI, VectorDBQA
 from langchain.chains import RetrievalQAWithSourcesChain
 import PyPDF2
 
+
+from dotenv import load_dotenv
+import os
+
+# .env dosyasını yükle
+load_dotenv()
+
+# Ortam değişkenini al
+openai_api_key = os.getenv('OPENAI_API_KEY')
+
+
+
 # This function will parse pdf and extract and return list of page texts.
 def read_and_textify(files):
     text_list = []
@@ -65,20 +77,21 @@ if page == "Chat":
         sources = textify_output[1]
 
         # extract embeddings
-        embeddings = OpenAIEmbeddings(openai_api_key = st.secrets['openai_api_key'])
+        embeddings = OpenAIEmbeddings(openai_api_key = openai_api_key)
 
         # vector_store with metadata. Here we will store page number.
         vector_store = Chroma.from_texts(documents, embeddings, metadatas = [{"source": s} for s in sources])
 
         #deciding model
-        model_name = "gpt-4"
+        model_name = "gpt-3.5-turbo"
+        #model_name = "gpt-4"
 
-        retriver = vector_store.as_retriver()
-        retriver.search_kwargs = {'k':2 }
+        retriever = vector_store.as_retriever()
+        retriever.search_kwargs = {'k':2 }
 
         # initiate model
-        llm = OpenAI(model_name = model_name, openai_api_key= st.secrets["openai_api_key"], streaming=True)
-        model = RetrievalQAWithSourcesChain.from_chain_type(llm=llm, chain_type='stuff', retriver=retriver)
+        llm = OpenAI(model_name = model_name, openai_api_key= openai_api_key, streaming=True)
+        model = RetrievalQAWithSourcesChain.from_chain_type(llm=llm, chain_type='stuff', retriever=retriever)
 
         st.header('Frage an deine PDFs')
         user_q = st.text_area("Geben Sie hier Ihre Frage ein")
@@ -94,7 +107,7 @@ if page == "Chat":
             except Exception as e:
                 st.error(f"Ein Problem ist aufgetreten")
                 st.error("Hoppla, die GPT-Antwort führte zu einem Fehler : Bitte versuchen Sie es mit einer anderen Frage noch einmal.")
-                
+
 
 
 
